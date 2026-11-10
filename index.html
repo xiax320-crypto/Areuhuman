@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>ARE YOU HUMAN? — The Locked CAPTCHA Archive</title>
+<style>
+:root{
+  --cream:#FBF2E5;--pink:#F1CEDF;--yellow:#F4F3C8;--ice:#E4F0F3;--blue:#446091;
+  --teal:#42595F;--lav:#848096;--warm:#69605E;--stone:#CBCAC4;--ink:#303734;
+  --sans:Arial,Helvetica,sans-serif;--serif:Georgia,'Times New Roman',serif;--mono:'Courier New',monospace;
+}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#fff;color:var(--ink);font-family:var(--sans)}
+button,input{font:inherit}button{cursor:pointer}button:disabled{cursor:default}a{color:inherit}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #ce6e9b;outline-offset:4px}
+[hidden]{display:none!important}::selection{background:#f2aacc;color:#253b54}
+.ui-small,.mono{font:11px/1.4 var(--mono);letter-spacing:.07em}.upper{text-transform:uppercase}.muted{color:var(--warm)}
+.top-floating{position:fixed;z-index:90;top:22px;right:25px;display:flex;align-items:center;gap:8px}
+.library-button{padding:11px 17px;border:1px solid var(--blue);color:var(--blue);background:#ffffffef;border-radius:0;box-shadow:5px 5px 0 #44609118;font:11px var(--mono);letter-spacing:.06em;transition:background .2s,transform .2s}.library-button:hover{background:var(--yellow);transform:translateY(-2px)}
+#toast{position:fixed;bottom:25px;right:26px;background:var(--teal);color:#fff;padding:14px 20px;max-width:340px;z-index:140;opacity:0;transform:translateY(12px);pointer-events:none;transition:opacity .3s,transform .3s;font:12px/1.5 var(--mono)}#toast.show{opacity:1;transform:none}
+/* Homepage — simple fixed editorial left, kinetic objects at right */
+.home{height:100dvh;display:grid;grid-template-columns:43% 57%;background:#fff;overflow:hidden}
+.home-left{
+  min-width:0;
+  padding:28px clamp(22px,5vw,83px) 32px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  background: linear-gradient(180deg, #f4f3c8 0%, #e4f0f3 45%, #ede8ef 100%);
+}
+.home-upper{display:flex;justify-content:space-between;gap:12px;font:10px/1.5 var(--mono);letter-spacing:.06em;color:#6b6b69}
+.home-core{margin-top:-5vh}.home-core h1{font:400 clamp(70px,8.4vw,147px)/.88 var(--serif);letter-spacing:-.077em;margin:0 0 29px;color:#292928;overflow-wrap:normal}.home-core h1 em{font-style:normal;color:var(--blue)}
+.home-core p{max-width:310px;color:#6b6b69;font:15px/1.53 var(--sans);margin:0}.home-footer{border-top:1px solid #d7d8d5;padding-top:17px;display:flex;justify-content:space-between;align-items:end;gap:15px}.home-footer b{display:block;color:var(--blue);font:19px var(--mono);margin-top:7px}.home-footer .tiny{text-align:right;font:10px/1.5 var(--mono);letter-spacing:.07em;color:#747572}
+.archive-viewport{height:100%;position:relative;background:linear-gradient(145deg,#fff 0%,#f4f4f1 53%,#f9f7f6 100%);overflow:hidden;touch-action:pan-x;cursor:grab}.archive-viewport.dragging{cursor:grabbing}
+.archive-overline,.archive-bottomline{z-index:3;position:absolute;left:28px;right:28px;pointer-events:none;font:10px var(--mono);color:#696b6c;display:flex;justify-content:space-between;letter-spacing:.08em}.archive-overline{top:31px;padding-right:115px}.archive-bottomline{bottom:28px}
+.archive-track{position:absolute;left:0;top:0;width:100%;will-change:transform}.archive-slide{height:100dvh;min-height:480px;padding:95px 8% 100px;display:flex;justify-content:center;align-items:center;perspective:1000px}
+.archive-object{border:0;background:none;padding:0;display:flex;flex-direction:column;align-items:center;width:min(75%,410px);min-width:220px;color:#515253;cursor:pointer;text-align:left}
+.archive-object:focus-visible{outline-offset:12px}.sculpture{aspect-ratio:1.12/1;width:100%;position:relative;display:flex;align-items:center;justify-content:center;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.2,.8,.2,1),filter .4s,opacity .4s;filter:grayscale(1);opacity:.72}
+.archive-object:hover .sculpture,.archive-object:focus-visible .sculpture{transform:translateY(-10px) rotateX(12deg) rotateY(-19deg) rotateZ(3deg) scale(1.06)}
+.archive-object.collected .sculpture{filter:none;opacity:1}.object-info{margin-top:14px;padding-top:12px;border-top:1px solid #969b9c;width:100%;display:flex;justify-content:space-between;gap:10px;font:10px var(--mono);letter-spacing:.06em}.object-info span:last-child{white-space:nowrap}
+.obj-text{background:radial-gradient(circle at 30% 28%,#fff2fa,#e6b8d4 75%);border-radius:50%;box-shadow:20px 23px 0 #8480963a;transform:rotate(-8deg)}.obj-text .letters{font:bold clamp(62px,8vw,125px)/.75 var(--serif);letter-spacing:-.15em;color:var(--blue);transform:rotate(-16deg);text-shadow:3px 4px #fff9}.obj-text .letters i{color:#755b8d}.obj-text .stroke{position:absolute;width:88%;height:3px;background:#80ae9c;transform:rotate(28deg);top:53%}
+.obj-slider{border-radius:50%;background:radial-gradient(circle at 30% 26%,#fff 0%,#b4e4ed 35%,#95b9d0 74%,#446091 100%);box-shadow:18px 25px 0 #44609136}.obj-slider .ring{width:84%;height:27%;border-radius:50px;border:12px solid #e8f5fb;box-shadow:inset 3px 5px 10px #44609165,4px 12px 4px #44609135;transform:rotate(-23deg)}.obj-slider .bead{position:absolute;left:61%;top:27%;width:32%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 30% 25%,white,#cedbe9 32%,#5d7aa8 78%);box-shadow:10px 13px 0 #243e6b55}
+.obj-sound{border-radius:18% 31% 25% 28%;background:#f3c9df;box-shadow:19px 18px 0 #8480965a;transform:rotate(9deg)}.obj-sound span{font:clamp(60px,9vw,140px)/1 var(--serif);color:var(--blue);transform:rotate(-10deg);text-shadow:6px 8px 0 #fff9}.obj-sound i{position:absolute;width:24%;aspect-ratio:1;border:5px solid #848096;border-radius:50%;top:10%;right:10%}
+.obj-abstract{background:radial-gradient(circle at 70% 10%,#eefaff,#f4f3c8 50%,#f3c5d9);border-radius:27% 35% 18% 35%;box-shadow:14px 20px 0 #a0aba84a}.obj-abstract .sphere{height:55%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 74% 23%,#6d91c0,#3e679a 35%,#172c4b 88%);box-shadow:13px 17px 15px #31405c66}.obj-abstract .p-letter{position:absolute;right:6%;top:3%;font:bold clamp(70px,11vw,160px)/1 var(--serif);color:#446091;text-shadow:9px 8px 0 #203d65}.obj-abstract .star{position:absolute;left:3%;top:6%;font-size:70px;color:#848096}
+.obj-camera{border-radius:5%;background:#e4f0f3;box-shadow:-15px -13px 0 #446091,17px 16px 0 #b4ccd3}.obj-camera .frame{height:65%;width:70%;background:#dedede;display:grid;place-items:center;border:2px solid #bbc0c1;font-size:110px;color:#446091}.obj-camera .frame:before{content:'';position:absolute;width:50%;height:50%;border:3px dashed #9bb8d2;border-radius:50%}
+.obj-check{border-radius:50%;border:18px solid #446091;background:#fbf2e5;box-shadow:18px 23px 0 #84809655;transform:rotate(-9deg)}.obj-check .check{font-size:clamp(125px,18vw,240px);color:#446091;line-height:1}
+/* Chapter shared */
+.chapter{min-height:100dvh;background:#fff;position:relative}.chapter-header{height:64px;padding:13px clamp(170px,15vw,210px) 13px clamp(20px,5vw,75px);display:flex;align-items:center;justify-content:space-between;gap:15px;border-bottom:1px solid #42595f27;background:#ffffffc9;position:sticky;top:0;z-index:40;backdrop-filter:blur(12px)}
+.chapter-header .ui-small{font-size:10px;white-space:nowrap}.chapter-back{border:0;background:transparent;color:var(--blue);font:11px var(--mono);letter-spacing:.07em;padding:8px 0}.chapter-back:hover{text-decoration:underline}
+.chapter-main{max-width:1220px;margin:auto;padding:42px clamp(22px,5vw,80px) 95px}.chapter-kicker{font:10px var(--mono);letter-spacing:.12em;color:var(--blue)}.chapter-title{font:400 clamp(48px,6.7vw,96px)/.99 var(--serif);letter-spacing:-.057em;color:var(--teal);margin:22px 0 18px}.chapter-desc{font:17px/1.55 var(--sans);color:#5b6363;max-width:680px}.chapter-instruction{display:block;font:11px/1.6 var(--mono);letter-spacing:.03em;margin-top:25px;padding:12px 0;border-block:1px solid #42595f6b;color:var(--blue)}
+.chapter-stage{margin-top:38px;min-height:360px}.action{background:var(--blue);color:#fff;border:1px solid var(--blue);padding:13px 19px;font:12px var(--mono);letter-spacing:.05em;transition:transform .2s,background .2s}.action:hover{transform:translateY(-2px);background:var(--teal)}.action.secondary{background:transparent;color:var(--blue)}.action.secondary:hover{background:#e4f0f3}.action.soft{background:#e4f0f3;color:var(--blue);border-color:#c1d3dc}.action:disabled{opacity:.5}.actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:22px}.feedback{font:12px/1.5 var(--mono);color:#b23865;min-height:22px;margin:14px 0 0}.feedback.good{color:#356b53}
+.completed-note{border:1px solid #8ea2bf;background:#f9fbfc;margin-top:28px;padding:28px;max-width:790px}.completed-note .stamp{font:11px var(--mono);color:var(--blue);letter-spacing:.13em}.completed-note h2{font:400 clamp(30px,4vw,58px)/1 var(--serif);color:var(--blue);margin:15px 0}.completed-note p{font:16px/1.55 var(--sans);max-width:660px;color:var(--teal)}.completed-note blockquote{border-left:3px solid var(--blue);margin:23px 0;padding:0 16px;font:italic 20px/1.45 var(--serif)}.source-note{border-top:1px solid #42595f44;margin-top:48px;padding-top:15px;font:11px/1.6 var(--mono);color:#6f7170;max-width:900px}.source-note a{color:var(--blue)}
+/* 01: literary document and real pixelated locks */
+.chapter.text-chapter{background:linear-gradient(180deg,#f7f7c8 0%,#fbf8e7 29%,#f7e5df 62%,#f1cadd 100%)}.text-chapter .chapter-header{background:#fbf9e7bd}.text-chapter .chapter-main{padding-top:25px}.research-title{font:400 clamp(41px,5vw,69px)/1.05 var(--serif);color:var(--teal);margin:25px 0 12px;letter-spacing:-.045em}.research-intro{font:15px/1.5 var(--sans);color:#596260;max-width:850px}.document-rule{font:10px/1.6 var(--mono);margin:18px 0;padding:10px 0;border-top:1px solid #42595f;border-bottom:1px solid #42595f;color:var(--blue)}.research-body{max-width:1050px;font:15px/1.46 var(--sans);color:#555d5e}.reading-section{margin:20px 0 24px;position:relative}.reading-section p{margin:0 0 12px}.reading-section .dropcap{font:400 52px/.86 var(--serif);color:var(--blue);float:left;margin:5px 8px 0 0}.reading-id{font:10px/1.4 var(--mono);color:#6c7376;margin-bottom:7px}.reading-section.locked{height:155px;border-top:1px dashed #8c9296;padding-top:12px}.mosaic{position:absolute;inset:0 0 0 0;display:flex;flex-wrap:wrap;gap:3px;align-content:center;overflow:hidden;pointer-events:none}.mosaic span{display:block;height:13px;opacity:.83;border-radius:1px}.locked-caption{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:9px 12px;border:1px solid #44609176;background:#f7f5eafa;color:var(--blue);font:11px/1.4 var(--mono);z-index:2;white-space:nowrap}
+.hidden-trigger{display:inline-block;vertical-align:baseline;border:0;background:transparent;padding:0 1px;margin:0 4px 0 3px;font:italic clamp(21px,2.25vw,32px)/.8 var(--serif);letter-spacing:-.05em;color:#3e607b;text-decoration:none;transform:rotate(-4deg);transition:transform .2s,color .2s;white-space:nowrap}.hidden-trigger.trigger-two{font-size:clamp(20px,2.15vw,30px);transform:rotate(4deg)}.hidden-trigger.trigger-three{font-size:clamp(20px,2.1vw,30px);transform:rotate(-2deg)}.hidden-trigger:hover{color:#a94783;transform:rotate(0deg) scale(1.04)}.hidden-trigger.verified{opacity:.65;text-decoration:line-through;text-decoration-thickness:1px}
+.source-foot{max-width:900px;margin-top:40px;padding-top:15px;border-top:1px solid #69605E;font:11px/1.6 var(--mono);color:#69605E}.source-foot a{color:var(--blue)}
+/* Text demo verification pop-up, with customizable image slots */
+.modal-mask{position:fixed;inset:0;z-index:160;display:grid;place-items:center;padding:18px;background:#263d5139}.captcha-modal{width:min(385px,98vw);background:#f5f5f1;border:1px solid #7e898c;box-shadow:7px 10px 0 #4460913a,0 25px 70px #15263b52;position:relative;touch-action:none}.modal-top{cursor:grab;padding:9px 11px;display:flex;justify-content:space-between;align-items:center;background:var(--blue);color:white;font:11px var(--mono);user-select:none}.modal-top:active{cursor:grabbing}.modal-close{background:#e9eff1;border:1px solid #a2abb2;width:25px;height:24px;line-height:20px;font-size:18px}.modal-body{padding:17px}.captcha-canvas{display:grid;place-items:center;background:repeating-linear-gradient(-11deg,#e8efe9 0 6px,#dce8ea 6px 12px);border:1px solid #bdd0d0;margin:10px 0 15px;height:155px;position:relative;overflow:hidden}.captcha-canvas img{height:100%;width:100%;object-fit:contain}.demo-letters{font:bold italic 57px var(--serif);letter-spacing:-.12em;color:#438776;text-shadow:3px 3px 0 #f0bfd6;transform:rotate(-11deg) skew(-5deg,2deg)}.captcha-canvas .noise{position:absolute;inset:0;font:100px var(--serif);letter-spacing:-.25em;color:#8480968a;text-align:center;transform:rotate(22deg)}.captcha-canvas .crossline{height:3px;width:120%;background:#c97984;position:absolute;transform:rotate(14deg)}.modal-body label{font:11px var(--mono);display:block;margin-bottom:6px}.input-group{display:flex;gap:8px}.input-group input{width:100%;min-width:0;padding:10px;border:1px solid #8ca5aa;background:#fff;color:#263c52;-webkit-text-fill-color:#263c52;caret-color:#446091;color-scheme:light}.input-group input::placeholder{color:#687981;opacity:1}.input-group button{border:0;background:var(--blue);color:white;font:11px var(--mono);padding:0 14px}.modal-bottom{margin-top:14px;display:flex;justify-content:space-between;gap:10px;border-top:1px solid #cbd2d3;padding-top:11px;font:10px var(--mono)}.modal-bottom button{border:0;background:none;color:var(--blue);font:inherit}
+/* 02: watery / 2000s Y2K slider */
+.chapter.slider-chapter{background:radial-gradient(circle at 73% 23%,#f4fbff 0%,#e4f0f3 40%,#bee3f1 100%)}.slider-machine{min-height:355px;background:linear-gradient(135deg,#e3f5feee,#ffffff94);border:2px solid #fff;box-shadow:0 18px 35px #44609127,inset 0 0 0 1px #739aba66;border-radius:26px;padding:36px clamp(20px,4vw,56px);max-width:850px;position:relative;overflow:hidden}.slider-machine:before,.slider-machine:after{content:'✳';position:absolute;color:#9bb9d4;font-size:80px;opacity:.5}.slider-machine:before{top:12px;right:19px}.slider-machine:after{bottom:-32px;left:15px}.slider-machine .machine-title{font:italic 39px var(--serif);color:var(--blue);text-shadow:3px 3px white}.slider-machine .machine-caption{font:11px var(--mono);color:#7287a2;margin:6px 0 37px}.tube-frame{position:relative;background:linear-gradient(180deg,#b4c9e1,#e8fdff 42%,#c7d5e9);border:6px ridge #e4f6ff;border-radius:100px;padding:21px 16px;box-shadow:inset 0 9px 11px #537fa43b,0 7px 0 #9ab6d2}.range-rail{position:relative;height:38px;display:flex;align-items:center}.range-rail:before{content:'';position:absolute;left:0;right:0;top:50%;height:7px;transform:translateY(-50%);background:linear-gradient(90deg,#fff,#8fb6d6);border-radius:15px}.range-rail .target{position:absolute;left:82%;width:13%;height:48px;top:-5px;border:2px dashed #446091;background:#d5edff76;border-radius:20px;pointer-events:none}.range-rail input{appearance:none;-webkit-appearance:none;width:100%;background:transparent;position:relative;z-index:2;cursor:grab;outline-offset:10px}.range-rail input::-webkit-slider-thumb{-webkit-appearance:none;width:57px;height:57px;border-radius:50%;border:3px solid #fff;background:radial-gradient(circle at 30% 25%,#fff,#c0dbe7 31%,#527eaa 70%,#274a78);box-shadow:5px 8px 3px #2a53775e}.range-rail input::-moz-range-thumb{width:55px;height:55px;border-radius:50%;border:3px solid #fff;background:radial-gradient(circle at 30% 25%,#fff,#c0dbe7 31%,#527eaa 70%,#274a78);box-shadow:5px 8px 3px #2a53775e}.range-bottom{display:flex;justify-content:space-between;color:#446091;font:11px var(--mono);margin-top:15px}.slider-readout{font:38px var(--serif);color:#446091;margin-top:27px;min-height:53px}
+/* 03: sound selection */
+.chapter.sound-chapter{background:linear-gradient(130deg,#fff 0%,#f9e0ee 48%,#dcecf1 100%)}.sound-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;max-width:650px}.sound-cell{aspect-ratio:1;border:1px solid #8d8d9f;background:linear-gradient(145deg,#f8f6f4,#e4f0f3);box-shadow:6px 7px 0 #84809635;font-size:clamp(50px,7vw,95px);font-family:var(--serif);color:var(--blue);transition:transform .16s,background .2s}.sound-cell:nth-child(3n+2){background:#f4f3c8}.sound-cell:nth-child(3n){background:#f1cedf}.sound-cell:hover{transform:translateY(-6px) rotate(3deg)}.sound-cell.selected{background:#446091;color:#fff;transform:rotate(-4deg) scale(.96)}.sound-cell.playing{box-shadow:0 0 0 5px #44609148,6px 7px 0 #84809635}.sound-instructions{display:flex;justify-content:space-between;gap:12px;align-items:center;max-width:650px;margin:0 0 17px;color:var(--teal);font:11px var(--mono)}
+/* 04: abstract associations */
+.chapter.abstract-chapter{background:radial-gradient(circle at 60% 20%,#a9e6f4,#f8f9da 52%,#f1cedf 100%)}.abstract-scene{max-width:940px;min-height:420px;position:relative;padding:20px 5px 30px;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;justify-items:center;gap:18px}.match-center{width:min(230px,100%);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 74% 22%,#729ac6 0%,#406d9e 28%,#172944 90%);box-shadow:18px 21px 19px #142a4457;display:grid;place-items:center;color:#fff;font:125px var(--serif);grid-column:2;grid-row:1;animation:orbit-slow 7s ease-in-out infinite alternate}.match-choice{border:0;background:none;padding:0;min-width:90px;min-height:120px;font:clamp(85px,11vw,153px)/1 var(--serif);transition:transform .25s,color .25s,filter .25s}.match-choice:hover{transform:translateY(-9px) rotate(-9deg) scale(1.1);filter:drop-shadow(9px 10px 1px #42595f40)}.match-choice.c1{grid-column:1;grid-row:1}.match-choice.c2{grid-column:3;grid-row:1}.match-choice.c3{grid-column:1;grid-row:2}.match-choice.c4{grid-column:3;grid-row:2}.match-center[style*="diamond"]{border-radius:10%;transform:rotate(45deg)}@keyframes orbit-slow{to{transform:translateY(-10px) rotateY(12deg)}}
+/* 05: camera / grid */
+.chapter.camera-chapter{background:#fff}.camera-launch{max-width:460px;background:var(--ice);padding:17px;box-shadow:-18px -17px 0 #446091;margin:48px auto 45px}.camera-tile{height:300px;border:0;background:#d6d6d6;display:flex;align-items:center;justify-content:center;width:100%;font-size:82px;color:#111;transition:background .2s}.camera-tile:hover{background:#cad3d6}.camera-live{max-width:640px;margin:25px auto}.camera-live video{width:100%;max-height:400px;object-fit:cover;background:#222;transform:scaleX(-1)}.camera-live .actions{justify-content:center}.camera-grid-wrap{max-width:550px;margin:28px auto;background:white;border:1px solid #ddd;box-shadow:0 15px 20px #4450601a;padding:8px}.camera-grid-title{background:#5299e2;color:#fff;padding:18px;font:bold 16px/1.35 var(--sans)}.camera-grid-title b{display:block;font-size:26px}.photo-grid{width:100%;aspect-ratio:1;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);background:#ddd;gap:2px}.photo-piece{border:0;padding:0;background-color:#d7d7d7;background-repeat:no-repeat;background-size:300% 300%;transition:filter .15s}.photo-piece:hover,.photo-piece:focus-visible{filter:brightness(1.22)}.photo-piece.selected{outline:4px solid #446091;outline-offset:-4px}
+/* 06: silly institutional checkbox */
+.chapter.checkbox-chapter{background:#fff}.checkbox-arena{height:350px;max-width:910px;position:relative;display:grid;place-items:center;margin:38px auto}.verify-widget{width:min(370px,94%);height:89px;border:1px solid #a8a8a8;background:linear-gradient(180deg,#fafafa,#e6e6e6);border-radius:8px;box-shadow:inset 0 1px #fff,0 3px 0 #d2d2d2;display:flex;align-items:center;padding:13px 15px;gap:12px;position:relative}.runaway-square{border:1px solid #777;background:#fff;width:34px;height:34px;border-radius:6px;display:grid;place-items:center;flex:none;position:relative;z-index:4;transition:transform .55s cubic-bezier(.2,1.2,.2,1),background .3s}.runaway-square.escape{transform:translate(125px,-104px) rotate(22deg)}.runaway-square.checked{background:var(--blue);color:#fff}.verify-label{font:15px var(--sans);flex:1;white-space:nowrap}.verify-brand{text-align:center;font:9px var(--sans);color:var(--blue);width:67px}.verify-brand svg{display:block;margin:0 auto;width:39px;height:33px}.verify-brand small{font-size:8px;color:#69605E}.checkbox-instruction{text-align:center;color:var(--warm);font:11px var(--mono)}
+/* Library overlay — available everywhere */
+.library-cover{position:fixed;inset:0;background:#17294475;z-index:110;opacity:0;transition:opacity .3s}.library-cover.open{opacity:1}.library-panel{position:fixed;right:0;top:0;height:100dvh;width:min(700px,100%);overflow-y:auto;z-index:120;background:var(--cream);transform:translateX(105%);transition:transform .35s cubic-bezier(.2,.75,.2,1);padding:32px clamp(22px,5vw,49px) 55px;box-shadow:-12px 0 40px #142d4d3b}.library-panel.open{transform:none}.library-top{display:flex;justify-content:space-between;align-items:center;gap:10px}.library-top button{background:transparent;border:1px solid var(--blue);padding:9px 12px;color:var(--blue);font:11px var(--mono)}.library-panel h2{font:normal clamp(47px,6vw,76px)/.98 var(--serif);letter-spacing:-.05em;color:var(--teal);margin:33px 0 13px}.library-panel .deck{color:#6b6b69;max-width:560px;line-height:1.5}.library-list{margin-top:34px}.library-record{border-top:1px solid #b4b7b5;padding:16px 0}.library-record button{width:100%;text-align:left;background:none;border:0;color:var(--teal);display:flex;align-items:flex-start;gap:15px;padding:0}.library-record button .n{font:11px var(--mono);color:var(--blue);padding-top:3px}.library-record button .record-name{font:21px/1.1 var(--serif);flex:1}.library-record button .arrow{font:22px var(--serif)}.library-body{font:14px/1.58 var(--sans);color:#4f5a5b;padding:15px 0 9px 33px;max-width:590px}.library-body p{margin:0 0 12px}.library-body a{color:var(--blue);font-family:var(--mono);font-size:11px;line-height:1.5}.library-end{padding-top:16px;border-top:1px solid #b4b7b5;font:11px/1.5 var(--mono);color:var(--warm)}
+@media(max-width:800px){.home{display:block;height:auto;overflow:visible}.home-left{height:65dvh;min-height:430px;padding:23px 27px}.home-core{margin:0}.home-core h1{font-size:clamp(67px,13vw,115px)}.archive-viewport{height:70dvh;min-height:480px}.archive-slide{height:70dvh;min-height:480px}.top-floating{top:15px;right:16px}.chapter-header{padding:13px 133px 13px 20px}.chapter-header .middle{display:none}.chapter-main{padding:25px 20px 70px}.abstract-scene{min-height:340px;gap:2px}.match-center{width:155px;font-size:90px}.match-choice{font-size:75px;min-width:60px}.research-title{font-size:44px}}
+@media(max-width:480px){.home-core h1{font-size:72px}.home-core p{font-size:13px}.home-upper{font-size:9px}.archive-overline{font-size:8px;padding-right:80px}.archive-bottomline{font-size:9px}.archive-object{min-width:170px}.library-button{font-size:10px;padding:9px 12px}.research-title{font-size:39px}.hidden-trigger,.hidden-trigger.trigger-two,.hidden-trigger.trigger-three{font-size:21px}.sound-grid{gap:7px}.sound-cell{font-size:53px}.checkbox-arena{height:300px}.runaway-square.escape{transform:translate(75px,-92px) rotate(22deg)}.verify-label{font-size:12px}.verify-widget{gap:7px}.match-center{width:120px;font-size:78px}.match-choice{font-size:66px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="top-floating"><button id="libraryOpen" class="library-button" type="button">LIBRARY ↗</button></div>
+<main id="home" class="home">
+  <section class="home-left" aria-label="Archive information">
+    <div class="home-upper"><span>HVD / DIGITAL ARCHIVE</span><span>EST. 2026</span></div>
+    <div class="home-core"><h1>ARE<br>YOU<br><em>HUMAN?</em></h1><p>Six tests stand between you and the information you came to read. Complete each verification to access the next record.</p></div>
+    <div class="home-footer"><div><span class="ui-small muted">ARCHIVE PROGRESS</span><b id="collectionCounter">00 / 06</b></div><div class="tiny" id="homeStatus">ACCESS RESTRICTED<br>SCROLL TO EXPLORE ↓</div></div>
+  </section>
+  <section id="archiveViewport" class="archive-viewport" aria-label="Scrolling CAPTCHA collection" tabindex="0"><div class="archive-overline"><span>CAPTCHA OBJECTS</span><span>SELECT TO ENTER</span></div><div class="archive-track" id="archiveTrack"></div><div class="archive-bottomline"><span>SCROLL / DRAG / CLICK</span><span id="archiveStatus">01 AVAILABLE</span></div></section>
+</main>
+<section id="chapterView" class="chapter" hidden><header class="chapter-header"><button class="chapter-back" id="backHome" type="button">← ARCHIVE</button><span class="middle ui-small muted" id="chapterBreadcrumb">HVD / EXPERIENCE FILE</span><span class="ui-small" id="chapterStep">01 / 06</span></header><div id="chapterContent"></div></section>
+<div class="library-cover" id="libraryCover" hidden></div>
+<aside class="library-panel" id="libraryPanel" role="dialog" aria-modal="true" aria-labelledby="libraryHeading" aria-hidden="true">
+  <div class="library-top"><span class="ui-small muted">HVD / RESEARCH COLLECTION</span><button type="button" id="libraryClose">CLOSE ×</button></div>
+  <h2 id="libraryHeading">CAPTCHA<br>LIBRARY.</h2><p class="deck">A freely accessible collection of histories, research, and critical questions about technologies that ask people to prove they are human.</p>
+  <div id="libraryRecords" class="library-list"></div><p class="library-end">RESEARCH IS OPEN. THE EXPERIENCES ARE SEQUENTIALLY LOCKED.</p>
+</aside>
+<div id="toast" role="status" aria-live="polite"></div>
+<!-- NOTE: Site is an artwork / functional demonstration, not an actual CAPTCHA security system. -->
+<script>
+'use strict';
+// ========================= EDITABLE CONFIGURATION =========================
+// Insert your custom CAPTCHA images below. Example: lucky: 'images/lucky.png'
+// Keep blank to use the fully functioning generated demonstration instead.
+const CAPTCHA_IMAGES = { lucky: '', ferryman: '', human: '' };
+const CAPTCHA_WORDS = { lucky: 'lucky7', ferryman: 'ferry9', human: 'human2' };
+const STORAGE_KEY = 'are-you-human-archive-v3';
+const TOTAL=6;
+const CHAPTERS=[
+ {title:'TEXT RECOGNITION',label:'001 / WORDS',subtitle:'Who decides what a human can read?', reflection:'You proved you could recognize the characters.', },
+ {title:'THE SLIDER',label:'002 / MOTION',subtitle:'Adjust yourself to fit the system.',reflection:'You adjusted yourself to fit the system.',doc:'A simple gesture can be presented as evidence of personhood. Yet moving a control toward a target says little about the person operating it.'},
+ {title:'ICONS & SOUND',label:'003 / PERCEPTION',subtitle:'Can perception be reduced to a rule?',reflection:'You have completed the task assigned by the system, which required you to categorize sounds and symbols.'},
+ {title:'ABSTRACT MATCH',label:'004 / CATEGORIES',subtitle:'Find the relationship the machine expects.',reflection:'You found the approved relationship. Someone else defined the categories before you arrived.'},
+ {title:'HUMAN DETECTION',label:'005 / IMAGE',subtitle:'Become the evidence you are asked to inspect.',reflection:'Your selection was accepted. The system did not check whether the chosen squares contained a person.'},
+ {title:'VERIFY YOU ARE HUMAN',label:'006 / DECLARATION',subtitle:'Even an ordinary checkbox can refuse to believe you.',reflection:'Access granted. Humanity unverified.'}
+];
+const LIBRARY=[
+ {title:'Little history of CAPTCHA',tag:'RESEARCH / HISTORY',paragraphs:[
+  'Brian Justie examines CAPTCHA as a system that identifies a person by first asking them to identify content. Its historical changes reveal that ideas of recognition, correct answers, and identity are not technologically neutral.',
+  'In this artwork, that tension becomes a reading experience: to understand CAPTCHA, visitors must first submit to repeated demonstrations of recognition.'
+ ],source:'Brian Justie, Internet Histories (2021)',url:'https://www.tandfonline.com/doi/full/10.1080/24701475.2020.1831197'},
+ {title:'A brief history of human verification',tag:'HISTORY / CONTEXT',paragraphs:[
+  'Early CAPTCHAs often asked users to transcribe distorted characters, betting that people could identify text that automated recognition systems struggled to read. Later systems employed image classification, interface actions, and behavioral risk assessment.',
+  'The tasks have changed as software became better at solving older puzzles. “Human-like” therefore describes an evolving technical expectation, not a stable definition of being human.'
+ ],source:'Based on CAPTCHA historical research',url:'https://www.tandfonline.com/doi/full/10.1080/24701475.2020.1831197'},
+ {title:'The labor hidden inside a test',tag:'RESEARCH / DIGITAL LABOR',paragraphs:[
+  'Some CAPTCHA systems turned verification into productive data work. Early reCAPTCHA helped decipher scanned words, bringing human recognition into document digitization.',
+  'The user may experience the task as an obstacle; the system can experience the same action as useful input. Who benefits from the labor performed at a security checkpoint?'
+ ],source:'Historical overview and discussion in Justie',url:'https://www.tandfonline.com/doi/full/10.1080/24701475.2020.1831197'},
+ {title:'From puzzles to behavioral scores',tag:'TECHNOLOGY / INTERACTION',paragraphs:[
+  'Modern verification can involve more than a visible puzzle. Google describes reCAPTCHA v3 as returning a risk score based on interactions, without requiring a traditional interruption for every user.',
+  'A system can evaluate actions without explicitly asking a person to solve a puzzle. This raises questions about what visitors know about the evaluation and how errors are contested.'
+ ],source:'Google reCAPTCHA v3 documentation',url:'https://developers.google.com/recaptcha/docs/v3'},
+ {title:'When verification excludes people',tag:'ACCESSIBILITY / CRITIQUE',paragraphs:[
+  'A CAPTCHA designed around visual, auditory, or motor performance can exclude people with disabilities or different access needs. The W3C discusses why such human tests can create barriers and examines alternatives.',
+  'This artwork offers sample and alternative paths so a viewer can experience its critical argument without surrendering personal data or meeting a narrow ability requirement.'
+ ],source:'W3C, Inaccessibility of CAPTCHA',url:'https://www.w3.org/TR/turingtest/'},
+ {title:'Does a successful test prove humanity?',tag:'CRITICAL QUESTION / HVD',paragraphs:[
+  'A completed puzzle confirms that a task was completed under certain rules. It cannot by itself establish a full account of personhood, memory, empathy, or identity.',
+  'HVD deliberately separates access from identity. At the end of this website, the archive may be fully unlocked without a claim that its visitor has been definitively verified as human.'
+ ],source:'Original text for ARE YOU HUMAN?',url:null}
+];
+const $=sel=>document.querySelector(sel);
+const state=loadState();
+let activeChapter=null;let textModalKey=null;let listenerCleanup=null;let artRAF=0;let artOffset=0;let artVelocity=.40;let artHover=false;let artUserPauseUntil=0;
+let textReplayUnlocked=null;let cameraStream=null,cameraPhoto=null,cameraPhase='launch';let soundCtx=null;let soundMuted=false;let soundSelections=new Set();let abstractRound=0;let checkEscaped=false;
+let timerToast=0;
+function loadState(){try{let o=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');return {completed:Array.from({length:TOTAL},(_,i)=>!!o.completed?.[i]),textUnlocked:Math.max(0,Math.min(3,Number(o.textUnlocked)||0))}}catch{return {completed:Array(TOTAL).fill(false),textUnlocked:0}}}
+function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}catch{}}
+function completedCount(){return state.completed.reduce((n,x)=>n+Number(x),0)}
+function hasAccess(i){return i>=0 && i<TOTAL && (i===0 || !!state.completed[i-1])}
+function toast(msg){const n=$('#toast');n.textContent=msg;n.classList.add('show');clearTimeout(timerToast);timerToast=setTimeout(()=>n.classList.remove('show'),2900)}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function homeArt(i){switch(i){
+ case 0:return '<div class="sculpture obj-text"><span class="letters">x<i>7</i>M2</span><span class="stroke"></span></div>';
+ case 1:return '<div class="sculpture obj-slider"><span class="ring"></span><span class="bead"></span></div>';
+ case 2:return '<div class="sculpture obj-sound"><span>♫</span><i></i></div>';
+ case 3:return '<div class="sculpture obj-abstract"><span class="star">★</span><span class="sphere"></span><span class="p-letter">P</span></div>';
+ case 4:return '<div class="sculpture obj-camera"><div class="frame" aria-hidden="true">▣</div></div>';
+ default:return '<div class="sculpture obj-check"><span class="check">✓</span></div>';
+ }}
+function renderHome(){let count=completedCount();$('#collectionCounter').textContent=`${String(count).padStart(2,'0')} / 06`;$('#homeStatus').innerHTML=count===6?'ALL FILES AVAILABLE<br>HUMAN STATUS UNKNOWN':'ACCESS RESTRICTED<br>SCROLL TO EXPLORE ↓';$('#archiveStatus').textContent=`${Math.min(TOTAL,count+1).toString().padStart(2,'0')} AVAILABLE`;
+ let visible=Math.min(TOTAL,count+1);let slides=Array.from({length:visible},(_,i)=>`<div class="archive-slide"><button class="archive-object ${state.completed[i]?'collected':'uncollected'}" type="button" data-open="${i}" aria-label="Open ${CHAPTERS[i].title}, ${state.completed[i]?'collected':'not yet collected'}">${homeArt(i)}<span class="object-info"><span>${CHAPTERS[i].label}</span><span>${state.completed[i]?'COLLECTED ✓':'VERIFY TO UNLOCK'}</span></span></button></div>`).join('');
+ $('#archiveTrack').innerHTML=slides.repeat(3);artOffset=0;
+}
+function safeRoute(hash){try{history.replaceState(null,'',location.pathname+location.search+hash)}catch(e){/* embedded preview / opaque origin */}}
+function showHome(){cleanupChapter();activeChapter=null;$('#chapterView').hidden=true;$('#home').hidden=false;document.body.className='';window.scrollTo(0,0);renderHome();safeRoute('#archive');}
+function navigateChapter(i){if(!hasAccess(i)){toast('PLEASE COMPLETE THE PREVIOUS VERIFICATION FIRST.');return;}cleanupChapter();activeChapter=i;$('#home').hidden=true;$('#chapterView').hidden=false;$('#chapterView').className='chapter '+['text-chapter','slider-chapter','sound-chapter','abstract-chapter','camera-chapter','checkbox-chapter'][i];$('#chapterStep').textContent=`${String(i+1).padStart(2,'0')} / 06`;$('#chapterBreadcrumb').textContent='HVD / '+CHAPTERS[i].label;safeRoute('#experience-'+(i+1));window.scrollTo(0,0);renderChapter();}
+function cleanupChapter(){textReplayUnlocked=null;closeModal(true);stopCamera();if(listenerCleanup){listenerCleanup();listenerCleanup=null;}abstractRound=0;checkEscaped=false;soundSelections.clear();}
+function markComplete(i){if(!state.completed[i]){state.completed[i]=true;save();toast(`ARCHIVE ENTRY 00${i+1} COLLECTED. THE NEXT TEST IS NOW AVAILABLE.`);}renderChapter();}
+function chapterShell(content, instruction){const c=CHAPTERS[activeChapter];return `<div class="chapter-main"><span class="chapter-kicker">HVD / EXPERIENCE FILE 00${activeChapter+1}</span><h1 class="chapter-title">${c.title}</h1><p class="chapter-desc">${c.subtitle}</p><div class="chapter-instruction">${instruction}</div>${content}</div>`;}
+function completedPanel(){
+  let i = activeChapter, c = CHAPTERS[i];
+  return `
+    <div class="completed-note" role="status">
+      <span class="stamp">HVD / ENTRY 00${i+1} / COLLECTED</span>
+      <h2>ACCESS GRANTED.</h2>
+      <blockquote>${c.reflection}</blockquote>
+      <div class="actions">
+        <button class="action" data-replay="${i}">↺ REPLAY EXPERIENCE</button>
+        <button class="action secondary" data-home>← RETURN TO ARCHIVE</button>
+        ${i < 5 && hasAccess(i+1) ? `<button class="action soft" data-next="${i+1}">NEXT TEST →</button>` : ''}
+      </div>
+    </div>
+  `;
+}
+function renderChapter(){if(activeChapter==null)return;let i=activeChapter,html='';if(state.completed[i] && replayMode!==i){html=i===0?renderTextChapter()+'<div class="chapter-main" style="padding-top:0">'+completedPanel()+'</div>':chapterShell(completedPanel(),'THIS RECORD HAS BEEN COLLECTED. YOU MAY REPLAY IT AT ANY TIME.');}
+ else if(i===0)html=renderTextChapter();else if(i===1)html=renderSliderChapter();else if(i===2)html=renderSoundChapter();else if(i===3)html=renderAbstractChapter();else if(i===4)html=renderCameraChapter();else html=renderCheckboxChapter();$('#chapterContent').innerHTML=html;
+ if(i===0)setupTextPage();if(i===1&&!state.completed[i])setupSlider();if(i===2&&!state.completed[i])setupSound();if(i===3&&!state.completed[i])setupAbstract();if(i===4&&!state.completed[i])setupCamera();if(i===5&&!state.completed[i])setupCheckbox();
+}
+// ========================= 01 TEXT RECOGNITION =========================
+const TEXT_SECTIONS=[
+ `CAPTCHA often enters daily life as an apparently minor interruption: read a distorted word, identify an object, or complete a simple task before proceeding. A person arrives to read or participate, but the page first demands a demonstration of recognition. The result is treated as evidence about the visitor. <button class="hidden-trigger trigger-one" data-text="lucky" type="button" aria-label="Lucky You, open first CAPTCHA">Lucky You</button> Reading becomes a privilege granted after a test.`,
+ `In <i>Little history of CAPTCHA</i>, Brian Justie describes how these systems changed the relationship between recognizing content and establishing identity. Early text puzzles relied on the assumption that people could interpret visual distortions more readily than automated programs. Yet this difference was temporary: machines changed, and the definition of an adequate human response changed with them. <button class="hidden-trigger trigger-two" data-text="ferryman" type="button" aria-label="pay the ferryman, open second CAPTCHA">pay the ferryman</button> Why should a moving technical boundary decide who may enter?`,
+ `The task is not always a neutral proof of attention. Some recognition systems also turn a visitor's work into useful information. A person may believe they are merely passing a checkpoint while contributing to another process. Other puzzles may disadvantage people whose vision, hearing, movement, language or familiarity differ from a test designer's assumptions. <button class="hidden-trigger trigger-three" data-text="human" type="button" aria-label="a blue moon, open third CAPTCHA">a blue moon</button> A measure built to exclude machines can also obstruct actual people.`,
+ `Today the act of verification extends beyond distorted words. Image labels, checkboxes, interactions and behavioral evaluations propose different tests of whether access should be allowed. Each test frames a narrow performance as evidence about an entire visitor. Completing every task may show that you followed the rules, recognized an image, or persisted long enough to continue. It does not explain who you are—or what humanity means.`
+];
+const TEXT_KEYS=['lucky','ferryman','human'];
+function mosaicMarkup(seed){let col=['#d6d4cf','#b6c9ce','#f0dedf','#c0c2bd','#aeb9bb','#ece5db'];let blocks='';for(let j=0;j<168;j++){let v=(j*19+seed*17)%col.length;let w=7+((j*7+seed)%4)*5;blocks+=`<span style="background:${col[v]};width:${w}px"></span>`;}return `<div class="mosaic" aria-hidden="true">${blocks}</div><span class="locked-caption">▦ CONTENT LOCKED / COMPLETE CAPTCHA 0${seed}</span>`}
+function textUnlockCount(){return replayMode===0?(textReplayUnlocked??0):state.textUnlocked;}
+function renderTextChapter(){const unlocked=textUnlockCount();let article=TEXT_SECTIONS.map((p,i)=>i<=unlocked?`<section class="reading-section" data-section="${i}"><div class="reading-id">PARAGRAPH ${String(i+1).padStart(2,'0')} / ${i===0?'OPEN':'UNLOCKED'}</div><p>${i===0?'<span class="dropcap">C</span>':''}${i===0?p.slice(1):p}</p></section>`:`<section class="reading-section locked" aria-label="Paragraph ${i+1} locked"><div class="reading-id">PARAGRAPH ${String(i+1).padStart(2,'0')}</div>${mosaicMarkup(i)}</section>`).join('');
+ return `<div class="chapter-main"><div class="chapter-kicker">ARCHIVE NO. 001 &nbsp; / &nbsp; TEXT RECOGNITION &nbsp; / &nbsp; RESEARCH</div><h1 class="research-title">Little history of <i>CAPTCHA</i></h1><p class="research-intro">An interactive reading inspired by Brian Justie's research on content recognition and digital identity. The following text is an original interpretation, not a copy of the article.</p><p class="document-rule">READ THE VISIBLE PARAGRAPH. CLICK THE INTRUDING PHRASE TO VERIFY. EACH SUCCESSFUL CAPTCHA REVEALS ANOTHER PARAGRAPH. &nbsp; VERIFIED ${unlocked} / 3</p><div class="research-body">${article}</div><aside class="source-foot">SOURCE: Brian Justie, “Little history of CAPTCHA,” <i>Internet Histories</i> 5, no. 1 (2021): 30–47. <a href="https://www.tandfonline.com/doi/full/10.1080/24701475.2020.1831197" target="_blank" rel="noopener noreferrer">READ ORIGINAL RESEARCH ↗</a></aside></div>`;
+}
+function setupTextPage(){$('#chapterContent').querySelectorAll('[data-text]').forEach((b,index)=>{if(index<textUnlockCount()){b.classList.add('verified');b.disabled=true;}else b.addEventListener('click',()=>openModal(b.dataset.text));});}
+function openModal(key){if(textModalKey)return;const expected=TEXT_KEYS[textUnlockCount()];if(key!==expected)return;textModalKey=key;let backdrop=document.createElement('div');backdrop.id='textModal';backdrop.className='modal-mask';backdrop.innerHTML=`<div class="captcha-modal" role="dialog" aria-modal="true" aria-labelledby="modalHeading"><div class="modal-top" id="modalDrag"><span id="modalHeading">HVD — HUMAN VERIFICATION REQUIRED</span><button type="button" class="modal-close" id="modalX" aria-label="Close dialog">×</button></div><form class="modal-body" id="wordForm"><div class="ui-small">Enter the characters you can read:</div><div class="captcha-canvas" id="captchaCanvas"></div><label for="captchaInput">YOUR ANSWER</label><div class="input-group"><input id="captchaInput" type="text" spellcheck="false" autocomplete="off" required><button type="submit">VERIFY ↗</button></div><div class="feedback" id="captchaFeedback" aria-live="polite"></div><div class="modal-bottom"><span>TEST ${textUnlockCount()+1} / 3</span><button type="button" id="newCode">RELOAD ↻</button></div></form></div>`;document.body.appendChild(backdrop);paintCaptcha(key);
+ const win=backdrop.querySelector('.captcha-modal');backdrop.querySelector('#modalX').onclick=()=>closeModal();backdrop.addEventListener('click',e=>{if(e.target===backdrop)closeModal()});backdrop.querySelector('#newCode').onclick=()=>paintCaptcha(key);
+ backdrop.querySelector('#wordForm').addEventListener('submit',e=>{e.preventDefault();const answer=backdrop.querySelector('#captchaInput').value.trim().replace(/\s+/g,'').toLowerCase();if(answer!==CAPTCHA_WORDS[key].toLowerCase()){backdrop.querySelector('#captchaFeedback').textContent='NOT RECOGNIZED. TRY AGAIN.';return;}if(replayMode===0){textReplayUnlocked=(textReplayUnlocked??0)+1;}else{state.textUnlocked+=1;save();}let step=textUnlockCount();closeModal();if(step===3){markComplete(0);}else{renderChapter();const next=$('#chapterContent [data-section="'+step+'"]');if(next)next.scrollIntoView({behavior:'smooth',block:'center'});toast(`PARAGRAPH ${step+1} UNLOCKED.`);}});
+ let drag=null;const handle=backdrop.querySelector('#modalDrag');handle.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;drag={x:e.clientX,y:e.clientY,tx:0,ty:0};handle.setPointerCapture(e.pointerId)});handle.addEventListener('pointermove',e=>{if(!drag)return;drag.tx=e.clientX-drag.x;drag.ty=e.clientY-drag.y;win.style.transform=`translate(${drag.tx}px,${drag.ty}px)`});handle.addEventListener('pointerup',()=>drag=null);handle.addEventListener('pointercancel',()=>drag=null);setTimeout(()=>backdrop.querySelector('#captchaInput')?.focus(),90);
+}
+function paintCaptcha(key){let node=$('#captchaCanvas');if(!node)return;node.innerHTML='';let url=CAPTCHA_IMAGES[key];if(url){const image=document.createElement('img');image.alt='Custom CAPTCHA image';image.src=url;image.onerror=()=>{node.innerHTML=demoCaptchaText(CAPTCHA_WORDS[key]);};node.appendChild(image);}else{node.innerHTML=demoCaptchaText(CAPTCHA_WORDS[key])};}
+function demoCaptchaText(code){return `<span class="noise" aria-hidden="true">⌁ ╳ ∿</span><span class="demo-letters" aria-label="demo CAPTCHA code">${esc(code)}</span><span class="crossline" aria-hidden="true"></span>`}
+function closeModal(force=false){const box=$('#textModal');if(box)box.remove();textModalKey=null;}
+// ========================= 02 SLIDER =========================
+function renderSliderChapter(){let scene=`<div class="slider-machine"><div class="machine-title">SYNCHRONIZE .EXE</div><p class="machine-caption">PERSON / POSITION ALIGNMENT MODULE v2.6</p><div class="tube-frame"><div class="range-rail"><div class="target" aria-hidden="true"></div><input id="y2kRange" type="range" min="0" max="100" value="5" aria-label="Drag the pearl into the blue target zone"></div></div><div class="range-bottom"><span>START 0%</span><span>TARGET 82—95%</span></div><div id="sliderReadout" class="slider-readout">05% / SIGNAL LOST</div><div class="actions"><button class="action" id="lockSlider">LOCK POSITION ↗</button><button class="action secondary" id="sliderReset">RESET ↺</button></div><p class="feedback" id="sliderFeedback" aria-live="polite"></p></div>`;return chapterShell(`<div class="chapter-stage">${scene}</div>`,'DRAG THE PEARL TO THE TARGET ZONE. LOCK YOUR POSITION TO EARN ACCESS.');}
+function setupSlider(){let r=$('#y2kRange'),read=$('#sliderReadout');r.addEventListener('input',()=>{let v=+r.value;read.textContent=String(v).padStart(2,'0')+'% / '+(v>=82&&v<=95?'SIGNAL DETECTED':'ALIGNING…');});$('#sliderReset').onclick=()=>{r.value=5;read.textContent='05% / SIGNAL LOST';$('#sliderFeedback').textContent='';};$('#lockSlider').onclick=()=>{let v=+r.value;if(v>=82&&v<=95)markComplete(1);else{$('#sliderFeedback').textContent='THE SYSTEM DID NOT ACCEPT YOUR POSITION. TRY AGAIN.';r.classList.add('shake');setTimeout(()=>r.classList.remove('shake'),500)}};}
+// ========================= 03 MUSICAL ICONS =========================
+const ICONS=[{s:'♪',note:330,good:true},{s:'✿',note:155,good:false},{s:'♫',note:392,good:true},{s:'✦',note:197,good:false},{s:'◇',note:175,good:false},{s:'♬',note:523,good:true},{s:'☼',note:210,good:false},{s:'⌘',note:140,good:false},{s:'➜',note:250,good:false}];
+function renderSoundChapter(){let cells=ICONS.map((x,i)=>`<button type="button" class="sound-cell" data-icon="${i}" aria-label="Select symbol ${esc(x.s)} and hear its sound" aria-pressed="false">${x.s}</button>`).join('');return chapterShell(`<div class="chapter-stage"><div class="sound-instructions"><span>SELECT THE THREE MUSICAL NOTE ICONS</span><button id="muteSound" class="action secondary" type="button">SOUND: ON</button></div><div class="sound-grid">${cells}</div><div class="actions"><button class="action" type="button" id="verifySound">VERIFY SELECTION ↗</button><button class="action secondary" id="clearSound">CLEAR</button></div><p class="feedback" id="soundFeedback" aria-live="polite"></p></div>`,'CLICK ICONS TO HEAR THEIR ORIGINAL SYNTH NOTES. SELECT ALL THREE MUSICAL SYMBOLS.');}
+function playIcon(index){if(soundMuted)return;try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;soundCtx=soundCtx||new C();if(soundCtx.state==='suspended')soundCtx.resume();let t=soundCtx.currentTime;let note=ICONS[index];let osc=soundCtx.createOscillator(),gain=soundCtx.createGain();osc.type=note.good?'sine':'triangle';osc.frequency.setValueAtTime(note.note,t);if(note.good)osc.frequency.exponentialRampToValueAtTime(note.note*1.5,t+.23);else osc.frequency.exponentialRampToValueAtTime(note.note*.65,t+.15);gain.gain.setValueAtTime(.0001,t);gain.gain.exponentialRampToValueAtTime(.11,t+.025);gain.gain.exponentialRampToValueAtTime(.0001,t+.30);osc.connect(gain).connect(soundCtx.destination);osc.start(t);osc.stop(t+.32);}catch(e){}}
+function setupSound(){soundSelections.clear();$('#chapterContent').querySelectorAll('[data-icon]').forEach(btn=>btn.addEventListener('click',()=>{const n=+btn.dataset.icon;playIcon(n);if(soundSelections.has(n))soundSelections.delete(n);else soundSelections.add(n);btn.classList.toggle('selected',soundSelections.has(n));btn.setAttribute('aria-pressed',String(soundSelections.has(n)));btn.classList.add('playing');setTimeout(()=>btn.classList.remove('playing'),320)}));$('#muteSound').onclick=()=>{soundMuted=!soundMuted;$('#muteSound').textContent='SOUND: '+(soundMuted?'OFF':'ON')};$('#clearSound').onclick=()=>{soundSelections.clear();$('#chapterContent').querySelectorAll('[data-icon]').forEach(b=>{b.classList.remove('selected');b.setAttribute('aria-pressed','false')});$('#soundFeedback').textContent=''};$('#verifySound').onclick=()=>{let good=[0,2,5];if(soundSelections.size===3&&good.every(x=>soundSelections.has(x)))markComplete(2);else $('#soundFeedback').textContent='NOT MATCHED. SELECT EVERY MUSICAL NOTE ICON.'};}
+// ========================= 04 ABSTRACT MATCHING =========================
+const MATCH_ROUNDS=[
+ {instruction:'CLICK THE LETTER THAT HAS THE SAME COLOR AS THE SPHERE.',center:'',centerType:'sphere',options:[{c:'★',color:'#848096'},{c:'P',color:'#446091'},{c:'e',color:'#848096'},{c:'■',color:'#848096'}],answer:1},
+ {instruction:'CLICK THE SHAPE THAT MATCHES THE CENTRAL SILHOUETTE.',center:'◇',centerType:'diamond',options:[{c:'●',color:'#848096'},{c:'▲',color:'#848096'},{c:'◇',color:'#446091'},{c:'✦',color:'#848096'}],answer:2},
+ {instruction:'CLICK THE SYMBOL WITH THE SAME ORBITAL SHAPE.',center:'◎',centerType:'orbit',options:[{c:'□',color:'#848096'},{c:'◎',color:'#446091'},{c:'☆',color:'#848096'},{c:'△',color:'#848096'}],answer:1}
+];
+function renderAbstractChapter(){const r=MATCH_ROUNDS[abstractRound];let opts=r.options.map((o,j)=>`<button class="match-choice c${j+1}" type="button" data-match="${j}" style="color:${o.color}" aria-label="Choose ${esc(o.c)}">${o.c}</button>`).join('');let cs=r.centerType==='sphere'?'':r.centerType==='diamond'?'background:radial-gradient(circle at 25% 20%,#fff,#c0c5d0 40%,#848096);border-radius:23%':'background:radial-gradient(circle at 25% 20%,#fff,#cedcea 40%,#446091);border-radius:50%';return chapterShell(`<div class="chapter-stage"><div class="chapter-kicker">ROUND ${abstractRound+1} / 3</div><h2 style="font:19px/1.4 var(--serif);color:var(--teal);font-weight:400">${r.instruction}</h2><div class="abstract-scene"><div class="match-center" style="${cs}">${r.center}</div>${opts}</div><p class="feedback" id="abstractFeedback" aria-live="polite"></p></div>`,'OBSERVE THE REFERENCE OBJECT. FIND THE MATCH THE SYSTEM EXPECTS.');}
+function setupAbstract(){$('#chapterContent').querySelectorAll('[data-match]').forEach(el=>el.addEventListener('click',()=>{let ans=+el.dataset.match;if(ans===MATCH_ROUNDS[abstractRound].answer){abstractRound++;if(abstractRound===3)markComplete(3);else{renderChapter();toast(`MATCH ACCEPTED. ROUND ${abstractRound+1} UNLOCKED.`)}}else $('#abstractFeedback').textContent='MATCH NOT ACCEPTED. TRY AGAIN.'}));}
+// ========================= 05 CAMERA DETECTION =========================
+function cameraScreen(){
+  if(cameraPhase === 'live') return `
+    <div class="camera-live">
+      <video id="cameraVideo" autoplay muted playsinline aria-label="Live camera preview"></video>
+      <div class="actions">
+        <button class="action" id="capturePhoto">CAPTURE IMAGE ↗</button>
+      </div>
+      <p class="feedback" id="cameraFeedback"></p>
+    </div>
+  `;
+
+  if(cameraPhase === 'grid') return `
+    <div class="camera-grid-wrap">
+      <div class="camera-grid-title">Select all squares with <b>humans</b></div>
+      <div class="photo-grid" id="photoGrid" role="group" aria-label="Select a square in the captured photograph"></div>
+      <p class="ui-small muted" style="padding:12px 6px 3px">CLICK ANY SQUARE TO SUBMIT YOUR SELECTION.</p>
+    </div>
+  `;
+
+  return `
+    <div class="camera-launch">
+      <button class="camera-tile" id="launchCamera" type="button" aria-label="Activate front camera">▣</button>
+    </div>
+    <p class="ui-small" style="text-align:center;color:var(--warm)">CLICK THE FRAME TO ACTIVATE THE FRONT CAMERA.</p>
+    <p class="feedback" id="cameraFeedback" style="text-align:center"></p>
+  `;
+}
+function renderCameraChapter(){return chapterShell(`<div class="chapter-stage">${cameraScreen()}</div>`,'CAPTURE A HUMAN. THEN SELECT ALL SQUARES CONTAINING A PERSON. CAMERA ACCESS IS OPTIONAL.');}
+function stopCamera(){if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;}}
+async function startCamera(){try{if(!navigator.mediaDevices?.getUserMedia)throw new Error('Camera unavailable in this context. Try localhost or HTTPS.');const stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:'user'}});if(activeChapter!==4){stream.getTracks().forEach(t=>t.stop());return}cameraStream=stream;cameraPhase='live';renderChapter();const video=$('#cameraVideo');if(video){video.srcObject=stream;video.play().catch(()=>{});} }catch(e){toast('CAMERA NOT AVAILABLE. USE THE SAMPLE IMAGE INSTEAD.');let hint=$('#cameraFeedback');if(hint)hint.textContent='Camera permission denied or unavailable. Sample mode is available below.';}}
+function samplePortrait(){const c=document.createElement('canvas');c.width=600;c.height=600;const x=c.getContext('2d');x.fillStyle='#D8D7CB';x.fillRect(0,0,600,600);x.fillStyle='#B1BCC1';x.fillRect(0,370,600,230);x.fillStyle='#42595F';x.beginPath();x.ellipse(300,620,225,240,0,0,Math.PI*2);x.fill();x.fillStyle='#B89478';x.fillRect(265,315,70,135);x.beginPath();x.ellipse(300,250,125,163,0,0,Math.PI*2);x.fill();x.fillStyle='#3C3537';x.beginPath();x.ellipse(300,150,132,113,0,Math.PI,Math.PI*2);x.lineTo(415,243);x.lineTo(392,155);x.quadraticCurveTo(270,117,177,219);x.closePath();x.fill();x.fillStyle='#30313A';x.beginPath();x.arc(258,264,8,0,Math.PI*2);x.arc(346,264,8,0,Math.PI*2);x.fill();x.strokeStyle='#815F5A';x.lineWidth=5;x.beginPath();x.arc(302,303,37,.15,Math.PI-.15);x.stroke();x.fillStyle='#fff';x.font='16px monospace';x.fillText('DEMO IMAGE / NOT A REAL CAMERA PHOTO',15,580);return c.toDataURL('image/png');}
+function useSample(){cameraPhoto=samplePortrait();stopCamera();cameraPhase='grid';renderChapter();}
+function capturePhoto(){const video=$('#cameraVideo');if(!video||!video.videoWidth){toast('CAMERA IS STILL STARTING. TRY AGAIN.');return;}const canvas=document.createElement('canvas');const side=Math.min(video.videoWidth,video.videoHeight);canvas.width=600;canvas.height=600;const c=canvas.getContext('2d');c.translate(600,0);c.scale(-1,1);c.drawImage(video,(video.videoWidth-side)/2,(video.videoHeight-side)/2,side,side,0,0,600,600);cameraPhoto=canvas.toDataURL('image/jpeg',.86);stopCamera();cameraPhase='grid';renderChapter();}
+function setupCamera(){
+  if(cameraPhase === 'launch'){
+    const btn = $('#launchCamera');
+    if(btn) btn.onclick = startCamera;
+  } 
+  else if(cameraPhase === 'live'){
+    const v = $('#cameraVideo');
+    if(cameraStream && v){
+      v.srcObject = cameraStream;
+      v.play().catch(()=>{});
+    }
+
+    const captureBtn = $('#capturePhoto');
+    if(captureBtn) captureBtn.onclick = capturePhoto;
+  } 
+  else {
+    const grid = $('#photoGrid');
+    if(!grid || !cameraPhoto) return;
+
+    for(let j = 0; j < 9; j++){
+      let b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'photo-piece';
+      b.setAttribute('aria-label', 'Select image square ' + (j+1));
+      b.style.backgroundImage = `url("${cameraPhoto}")`;
+      b.style.backgroundPosition = `${(j % 3) * 50}% ${Math.floor(j / 3) * 50}%`;
+
+      b.onclick = () => {
+        b.classList.add('selected');
+        setTimeout(() => {
+          cameraPhoto = null;
+          markComplete(4);
+        }, 370);
+      };
+
+      grid.appendChild(b);
+    }
+  }
+}
+// ========================= 06 RUNAWAY CHECKBOX =========================
+const HVD_LOGO=`<svg viewBox="0 0 255 214" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="HVD fictional emblem"><path d="M230.976 107C230.976 163.885 184.861 210 127.976 210C71.0903 210 24.9756 163.885 24.9756 107C24.9756 50.1147 71.0903 4 127.976 4C184.861 4 230.976 50.1147 230.976 107Z" fill="#F4F3C8" stroke-width="8" stroke="#69605E"/><path d="M128.975 17.0001C124.975 16.3334 115.875 22.6001 111.475 53.0001C109.475 55.6667 104.775 64.3 101.975 77.5C99.1752 90.7 95.8085 103.667 94.4752 108.5C93.1418 111 90.3752 116.4 89.9752 118C89.4752 120 89.4752 126 96.9752 125.5C98.1421 125 101.576 123.2 105.976 120C108.809 140.667 117.376 184.3 128.976 193.5" stroke-width="13" stroke-linecap="round" stroke="#446091"/><path d="M126.976 17.0463C130.976 16.3797 140.076 22.6463 144.476 53.0463C146.476 55.713 151.176 64.3463 153.976 77.5463C156.776 90.7463 160.143 103.713 161.476 108.546C162.809 111.046 165.576 116.446 165.976 118.046C166.476 120.046 166.476 126.046 158.976 125.546C157.809 125.046 154.375 123.246 149.976 120.046C147.142 140.713 138.576 184.346 126.976 193.546" stroke-width="13" stroke-linecap="round" stroke="#446091"/><path d="M96.9773 87C23.4769 91.5 -73.5244 121.5 106.477 138.5" stroke-width="8" stroke="#446091"/><path d="M157.476 87C230.976 91.5 327.978 121.5 147.976 138.5" stroke-width="8" stroke="#446091"/></svg>`;
+function renderCheckboxChapter(){return chapterShell(`<div class="chapter-stage"><div class="checkbox-arena"><div class="verify-widget"><button type="button" id="runawayCheck" class="runaway-square" aria-label="Confirm that you are human"></button><span class="verify-label">Verify you are human</span><span class="verify-brand">${HVD_LOGO}<span>hvd.cn</span><small>Privacy · Help</small></span></div></div><p id="checkboxMessage" class="checkbox-instruction" aria-live="polite">CLICK THE BOX TO CONFIRM YOUR HUMANITY.</p></div>`,'CLICK THE BOX. THE SYSTEM MAY REQUIRE YOU TO CONFIRM AGAIN.');}
+function setupCheckbox(){checkEscaped=false;const b=$('#runawayCheck');b.onclick=()=>{if(!checkEscaped){checkEscaped=true;b.classList.add('escape');$('#checkboxMessage').textContent='YOUR INTENT COULD NOT BE VERIFIED. PLEASE CLICK AGAIN.';}else{b.classList.add('checked');b.textContent='✓';setTimeout(()=>markComplete(5),370);}};}
+// ========================= EVENTS / REPLAY / LIBRARY =========================
+function replayChapter(i){if(i<0||i>=TOTAL)return;cleanupChapter();if(i===0){textReplayUnlocked=0;}if(i===4){cameraPhoto=null;cameraPhase='launch';}abstractRound=0;checkEscaped=false;soundSelections.clear();
+ // Temporarily render the chapter as a new experience without clearing collected status.
+ replayMode=i;renderReplay();}
+let replayMode=null;
+function renderReplay(){if(replayMode==null)return;let i=replayMode;activeChapter=i;let html=(i===0?renderTextChapter():i===1?renderSliderChapter():i===2?renderSoundChapter():i===3?renderAbstractChapter():i===4?renderCameraChapter():renderCheckboxChapter());$('#chapterContent').innerHTML=html;const stageSetup=[setupTextPage,setupSlider,setupSound,setupAbstract,setupCamera,setupCheckbox][i];stageSetup();}
+// Replay completion must produce the same reflection, but never removes the stored collection.
+const originalMarkComplete=markComplete;
+markComplete=function(i){if(replayMode===i){replayMode=null;state.completed[i]=true;if(i===0){state.textUnlocked=3;textReplayUnlocked=null;}save();renderChapter();toast('REPLAY COMPLETED. YOUR ARCHIVE RECORD IS STILL SAVED.');}else originalMarkComplete(i);};
+// For completed text replay: after all three keys markComplete() above handles collection.
+function navigateSafe(i){replayMode=null;navigateChapter(i);}
+$('#backHome').addEventListener('click',()=>{replayMode=null;showHome()});
+$('#archiveTrack').addEventListener('click',e=>{let b=e.target.closest('[data-open]');if(!b)return;navigateSafe(+b.dataset.open)});
+$('#chapterContent').addEventListener('click',e=>{let b=e.target.closest('[data-replay],[data-home],[data-next]');if(!b)return;if(b.hasAttribute('data-replay'))replayChapter(+b.dataset.replay);else if(b.hasAttribute('data-home')){replayMode=null;showHome()}else if(b.hasAttribute('data-next'))navigateSafe(+b.dataset.next);});
+// Seamless continuous scroll; each cycle uses the exact same set of slides.
+function animateArchive(){let vp=$('#archiveViewport'),track=$('#archiveTrack');let group=track.scrollHeight/3;if(group>0){let now=performance.now();if(!artHover && now>artUserPauseUntil && !matchMedia('(prefers-reduced-motion: reduce)').matches)artOffset+=artVelocity;artOffset=((artOffset%group)+group)%group;track.style.transform=`translateY(${-artOffset}px)`;}artRAF=requestAnimationFrame(animateArchive)}
+$('#archiveViewport').addEventListener('mouseenter',()=>artHover=true);$('#archiveViewport').addEventListener('mouseleave',()=>artHover=false);
+$('#archiveViewport').addEventListener('wheel',e=>{e.preventDefault();let group=$('#archiveTrack').scrollHeight/3;if(group){artOffset=((artOffset+e.deltaY)%group+group)%group;artUserPauseUntil=performance.now()+1100;}},{passive:false});
+let startDrag=null;$('#archiveViewport').addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;startDrag={y:e.clientY,offset:artOffset};e.currentTarget.setPointerCapture(e.pointerId);e.currentTarget.classList.add('dragging')});$('#archiveViewport').addEventListener('pointermove',e=>{if(!startDrag)return;let group=$('#archiveTrack').scrollHeight/3;artOffset=((startDrag.offset+(startDrag.y-e.clientY))%group+group)%group;artUserPauseUntil=performance.now()+900});const endDrag=()=>{startDrag=null;$('#archiveViewport').classList.remove('dragging')};$('#archiveViewport').addEventListener('pointerup',endDrag);$('#archiveViewport').addEventListener('pointercancel',endDrag);
+$('#archiveViewport').addEventListener('keydown',e=>{if(['ArrowDown','ArrowUp'].includes(e.key)){e.preventDefault();let group=$('#archiveTrack').scrollHeight/3;artOffset=((artOffset+(e.key==='ArrowDown'?160:-160))%group+group)%group;artUserPauseUntil=performance.now()+900}});
+function renderLibrary(){let parent=$('#libraryRecords');parent.innerHTML=LIBRARY.map((d,i)=>`<section class="library-record"><button type="button" data-lib="${i}" aria-expanded="false"><span class="n">${String(i+1).padStart(2,'0')}</span><span class="record-name">${esc(d.title)}<small style="display:block;font:10px var(--mono);letter-spacing:.08em;color:#848096;margin-top:7px">${esc(d.tag)}</small></span><span class="arrow">＋</span></button><div class="library-body" hidden>${d.paragraphs.map(p=>`<p>${esc(p)}</p>`).join('')}<p><b>SOURCE:</b> ${esc(d.source)}${d.url?` — <a href="${d.url}" target="_blank" rel="noopener noreferrer">OPEN REFERENCE ↗</a>`:''}</p></div></section>`).join('');}
+function openLibrary(){const cover=$('#libraryCover'),panel=$('#libraryPanel');cover.hidden=false;requestAnimationFrame(()=>cover.classList.add('open'));panel.classList.add('open');panel.setAttribute('aria-hidden','false');$('#libraryClose').focus();}
+function closeLibrary(){const cover=$('#libraryCover'),panel=$('#libraryPanel');panel.classList.remove('open');cover.classList.remove('open');panel.setAttribute('aria-hidden','true');setTimeout(()=>{if(!cover.classList.contains('open'))cover.hidden=true},350);$('#libraryOpen').focus();}
+$('#libraryOpen').onclick=openLibrary;$('#libraryClose').onclick=closeLibrary;$('#libraryCover').onclick=closeLibrary;
+$('#libraryRecords').addEventListener('click',e=>{const btn=e.target.closest('[data-lib]');if(!btn)return;let body=btn.nextElementSibling;const open=body.hidden;body.hidden=!open;btn.setAttribute('aria-expanded',String(open));btn.querySelector('.arrow').textContent=open?'−':'＋';});
+window.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#textModal'))closeModal();else if($('#libraryPanel').classList.contains('open'))closeLibrary();}});
+// Init: direct file works without installing anything; camera may need localhost/HTTPS.
+renderLibrary();if(!location.hash.includes('experience-'))showHome();else{let target=Number(location.hash.split('-').pop())-1;if(Number.isInteger(target)&&hasAccess(target))navigateSafe(target);else showHome();}artRAF=requestAnimationFrame(animateArchive);
+</script>
+</body>
+</html>
